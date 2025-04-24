@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Existing styles remain unchanged, adding chatbot-specific styles */
+        @media print {
+
+            .navbar,
+            .footer,
+            #generateReportBtn,
+            .btn,
+            .modal,
+            .form-label1,
+            #chatbot-container {
+                display: none !important;
+            }
+        }
+
+        body {
+            background: linear-gradient(135deg, #0d1b2a 0%, #1a2a44 100%);
+            color: #e0e0e0;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+            margin: 0;
+            padding: 0;
+            transition: background 0.5s ease;
+        }
+
+        /* Chatbot styles */
+        #chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        #chatbot-toggle {
+            background: linear-gradient(45deg, #00aaff, #007bff);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #chatbot-toggle:hover {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            transform: scale(1.1);
+        }
+
+        #chatbot-window {
+            display: none;
+            width: 350px;
+            height: 500px;
+            background: linear-gradient(145deg, #1e2a44, #2a3d5e);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .light-theme #chatbot-window {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            color: #2a2a2a;
+        }
+
+        #chatbot-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        #chatbot-messages {
+            height: 380px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .chatbot-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+
+        .bot-message {
+            background: #e9ecef;
+            color: #2a2a2a;
+        }
+
+        .light-theme .user-message {
+            background: #007bff;
+        }
+
+        .light-theme .bot-message {
+            background: #d3d3d3;
+        }
+
+        #chatbot-input {
+            display: flex;
+            border-top: 1px solid #ced4da;
+        }
+
+        #chatbot-input input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            background: transparent;
+            color: inherit;
+        }
+
+        #chatbot-input input:focus {
+            outline: none;
+        }
+
+        #chatbot-input button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        #chatbot-input button:hover {
+            background: #0056b3;
+        }
+
+        /* Existing styles continue */
+        .hero {
+            background: url('https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #map:hover {
+            transform: scale(1.03);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .card {
+            background: linear-gradient(145deg, #1e2a44, #2a3d5e);
+            color: #e0e0e0;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-label1 {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .navbar {
+            background: linear-gradient(to right, #0d1b2a, #1b263b);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: #fff !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-brand:hover,
+        .nav-link:hover {
+            color: #00d4ff !important;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .footer {
+            background: linear-gradient(to right, #0d1b2a, #1b263b);
+            color: #e0e0e0;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .section {
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent);
+            z-index: -1;
+        }
+
+        .legend {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend i {
+            width: 20px;
+            height: 20px;
+            float: left;
+            margin-right: 10px;
+            opacity: 0.8;
+            border-radius: 50%;
+        }
+
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .data-container {
+            position: relative;
+            min-height: 200px;
+        }
+
+        .compare-checkbox {
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .compare-checkbox .form-check-input {
+            width: 1.5em;
+            height: 1.5em;
+            cursor: pointer;
+        }
+
+        .navbar .btn-link.nav-link {
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar .btn-link.nav-link i {
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar .btn-link.nav-link:hover i {
+            color: #00d4ff !important;
+            transform: scale(1.1);
+        }
+
+        .light-theme .navbar .btn-link.nav-link i {
+            color: #2a2a2a;
+        }
+
+        .light-theme .navbar .btn-link.nav-link:hover i {
+            color: #007bff !important;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00aaff, #007bff);
+            border: none;
+            padding: 12px 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border-radius: 25px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5);
+        }
+
+        .btn-light {
+            background: #fff;
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 25px;
+        }
+
+        .btn-light:hover {
+            background: #e9ecef;
+            color: #007bff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-theme {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            color: #2a2a2a;
+        }
+
+        .light-theme .navbar {
+            background: linear-gradient(to right, #ffffff, #f8f9fa);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .light-theme .navbar-brand,
+        .light-theme .nav-link {
+            color: #2a2a2a !important;
+        }
+
+        .light-theme .navbar-brand:hover,
+        .light-theme .nav-link:hover {
+            color: #007bff !important;
+        }
+
+        .light-theme .card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            color: #2a2a2a;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .light-theme .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .light-theme .form-label1 {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .light-theme .footer {
+            background: linear-gradient(to right, #ffffff, #f8f9fa);
+            color: #2a2a2a;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .light-theme #map {
+            border: 1px solid #d3d3d3;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .light-theme #map:hover {
+            transform: scale(1.03);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .light-theme .btn-light {
+            background: linear-gradient(45deg, #f8f9fa, #ffffff);
+            color: #2a2a2a;
+        }
+
+        .light-theme .btn-light:hover {
+            background: linear-gradient(45deg, #e9ecef, #f8f9fa);
+            color: #007bff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .light-theme .btn-primary {
+            background: linear-gradient(45deg, #00aaff, #007bff);
+        }
+
+        .light-theme .btn-primary:hover {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5);
+        }
+
+        .light-theme .legend {
+            background: rgba(255, 255, 255, 0.95);
+            color: #2a2a2a;
+            border: 1px solid #d3d3d3;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .light-theme .form-control {
+            background: #ffffff;
+            color: #2a2a2a;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .light-theme .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+        }
+
+        .light-theme .theme-toggle .btn {
+            background: linear-gradient(45deg, #6c757d, #868e96);
+            color: #fff;
+        }
+
+        .light-theme .theme-toggle .btn:hover {
+            background: linear-gradient(45deg, #5a6268, #6c757d);
+            transform: scale(1.1);
+        }
+
+        .light-theme .card.bg-dark {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa) !important;
+            color: #2a2a2a !important;
+        }
+
+        .light-theme .compare-mode .country-card {
+            border: 2px solid #007bff;
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.4);
+        }
+
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .light-theme h2,
+        .light-theme h3,
+        .light-theme h4,
+        .light-theme h5 {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.bg-dark {
+            transition: background 0.3s ease;
+        }
+
+        #compareUI {
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            transition: opacity 0.3s ease;
+        }
+
+        .light-theme #compareUI {
+            background: rgba(255, 255, 255, 0.95);
+            color: #2a2a2a;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal {
+            z-index: 1055;
+        }
+
+        .modal-dialog {
+            max-width: 500px;
+            margin: 1.75rem auto;
+            z-index: 1060;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            border: 1px solid #000;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            z-index: 1065;
+            position: relative;
+            pointer-events: auto !important;
+        }
+
+        .modal-backdrop {
+            background-color: transparent !important;
+            opacity: 0 !important;
+            z-index: 1050;
+            pointer-events: none;
+        }
+
+        .modal-backdrop.show {
+            opacity: 0 !important;
+        }
+
+        .modal-header,
+        .modal-footer {
+            border: none;
+        }
+
+        .modal-body {
+            padding: 20px;
+            pointer-events: auto !important;
+        }
+
+        .modal input,
+        .modal select,
+        .modal textarea,
+        .modal button,
+        .modal label,
+        .modal .btn-close {
+            pointer-events: auto !important;
+            z-index: 1070;
+            position: relative;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .modal.show .modal-dialog {
+            opacity: 1;
+            pointer-events: auto !important;
+        }
+
+        .modal.show .modal-content {
+            pointer-events: auto !important;
+        }
+
+        .search-bar {
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 30px;
+            border: 1px solid #ced4da;
+            border-radius: 25px;
+            font-size: 1rem;
+        }
+
+        .search-bar .fa-search {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #495057;
+        }
+
+        [data-tooltip] {
+            position: relative;
+            cursor: pointer;
+        }
+
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Explore Climate Change</h1>
+                <p>Visualize and predict global climate impacts with real-time data.</p>
+                <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#locationModal">Get
+                    Started</button>
+            </div>
+        </div>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="#">🌍 Climate Change Impacts Visualizer</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="#mapSection">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#charts">Charts</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#simulator">Simulation</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact Us</a></li>
+                        <li class="nav-item">
+                            <button id="themeToggle" class="btn btn-link btn-secondary nav-link" title="Toggle Theme"
+                                data-tooltip="Switch between light and dark mode">
+                                <i class="fas fa-moon"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content">
+            <div class="container text-center section fade-in" id="mapSection">
+                <h2 class="fw-bold">Climate Dashboard</h2>
+                <p>How unusual is the current climate?</p>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="countrySearch" placeholder="Search for a country..." class="form-control">
+                </div>
+                <div id="map"></div>
+                <div class="loading-spinner" id="mapLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div class="compare-checkbox form-check form-switch">
+                    <input class="form-check-input me-5" type="checkbox" id="compareMode">
+                    <label class="form-check-label" for="compareMode">Compare Countries Mode</label>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center h-100">
+                            <h5><i class="fas fa-thermometer-half"></i> Temperature</h5>
+                            <h4 id="temperature" class="fw-bold">Loading...</h4>
+                            <h5>(Current temperature)</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center h-100">
+                            <h5><i class="fas fa-cloud"></i> CO₂ Emissions</h5>
+                            <h4 id="co2Emissions" class="fw-bold">Loading...</h4>
+                            <h5>(Global CO₂ emissions per year)</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center h-100">
+                            <h5><i class="fas fa-tree"></i> Deforestation Rate</h5>
+                            <h4 id="deforestationRate" class="fw-bold">Loading...</h4>
+                            <h5>(Forests lost annually)</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-column align-items-center justify-content-center text-center mt-3">
+                    <h2 id="location">Loading...</h2>
+                    <button class="btn btn-light mt-2" data-bs-toggle="modal" data-bs-target="#locationModal">Change
+                        Location</button>
+                    <button class="btn btn-primary mt-2" id="refreshData" data-tooltip="Refresh current data"><i
+                            class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-dark" id="locationModalLabel">Select Country</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <select id="countrySelect" class="form-select">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="updateLocation">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container text-center mt-5 fade-in" id="charts">
+                    <h3>Climate Trends</h3>
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card bg-dark text-white h-100 py-4">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center"><i class="fas fa-thermometer-half"></i>
+                                        Temperature Trends</h5>
+                                    <canvas id="chart1"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-dark text-white h-100 py-4">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center"><i class="fas fa-cloud"></i> CO₂ Emissions</h5>
+                                    <canvas id="chart2"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-dark text-white h-100 py-4">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center"><i class="fas fa-tree"></i> Deforestation Rate
+                                    </h5>
+                                    <canvas id="chart3"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container text-center mt-5">
+                    <h3>Climate Prediction</h3>
+                    <p>Select a country and year to predict climate factors.</p>
+                    <form id="predictionForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="predictionCountry" class="form-label">Select Country</label>
+                                <select id="predictionCountry" class="form-select">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="predictionYear" class="form-label">Enter Year</label>
+                                <input type="number" class="form-control" id="predictionYear" placeholder="e.g., 2030"
+                                    min="2023" max="2100">
+                            </div>
+                        </div>
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary">Predict</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="container text-center mt-4" id="predictionResults">
+                    <h4>Prediction Results</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card p-3 text-center h-100">
+                                <h5><i class="fas fa-thermometer-half"></i> Predicted Temperature</h5>
+                                <h4 id="predictedTemperature" class="fw-bold">-</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-3 text-center h-100">
+                                <h5><i class="fas fa-cloud"></i> Predicted CO₂ Emissions</h5>
+                                <h4 id="predictedCO2" class="fw-bold">-</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-3 text-center h-100">
+                                <h5><i class="fas fa-tree"></i> Predicted Deforestation Rate</h5>
+                                <h4 id="predictedDeforestation" class="fw-bold">-</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="simulator">
+                    <div class="card bg-dark text-white mt-5 fade-in">
+                        <div class="card-body">
+                            <h3 class="card-title text-center">Simulation Tool</h3>
+                            <p class="text-center">Adjust the values below to see their impact on climate factors.</p>
+                            <form id="simulationForm">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="temperatureChange" class="form-label1 mb-2">Temperature Change
+                                            (°C)</label>
+                                        <input type="number" class="form-control" id="temperatureChange"
+                                            placeholder="e.g., 2" step="0.1">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="co2Level" class="form-label1 mb-2">CO2 Level (ppm)</label>
+                                        <input type="number" class="form-control" id="co2Level" placeholder="e.g., 400"
+                                            step="1">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="deforestationChange" class="form-label1 mb-2">Deforestation Change
+                                            (%)</label>
+                                        <input type="number" class="form-control" id="deforestationChange"
+                                            placeholder="e.g., 5" step="0.1">
+                                    </div>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-light">Simulate Impact</button>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <div class="card p-3 text-center h-100">
+                                            <h5><i class="fas fa-thermometer-half"></i> Simulated Temperature</h5>
+                                            <h4 id="predictTemperature" class="fw-bold">-</h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card p-3 text-center h-100">
+                                            <h5><i class="fas fa-cloud"></i> Simulated CO₂ Emissions</h5>
+                                            <h4 id="predictCO2" class="fw-bold">-</h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card p-3 text-center h-100">
+                                            <h5><i class="fas fa-tree"></i> Simulated Deforestation Rate</h5>
+                                            <h4 id="predictDeforestation" class="fw-bold">-</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-light">Simulate Impact</button>
+                                </div> -->
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" id="generateReportBtn" data-tooltip="Generate a printable report">
+                    <i class="fas fa-file-pdf me-2"></i> Generate Custom Report
+                </button>
+
+                <div id="contact">
+                    <div class="container text-center my-5 fade-in">
+                        <p>If you notice problems with the data or want to suggest improvements, contact us:</p>
+                        <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#contactModal">Contact
+                            Us</button>
+                    </div>
+
+                    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-dark" id="contactModalLabel">Contact Us</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="contactForm">
+                                        <div class="mb-3 row">
+                                            <label for="name" class="col-sm-3 col-form-label text-dark">Name:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="name"
+                                                    placeholder="Enter your name" required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 row">
+                                            <label for="email" class="col-sm-3 col-form-label text-dark">Email:</label>
+                                            <div class="col-sm-9">
+                                                <input type="email" class="form-control" id="email"
+                                                    placeholder="Enter your email" required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 row">
+                                            <label for="mobile"
+                                                class="col-sm-3 col-form-label text-dark">Mobile:</label>
+                                            <div class="col-sm-9">
+                                                <input type="tel" class="form-control" id="mobile"
+                                                    placeholder="Enter your mobile number" required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 row">
+                                            <label for="message"
+                                                class="col-sm-3 col-form-label text-dark">Message:</label>
+                                            <div class="col-sm-9">
+                                                <textarea class="form-control" id="message" rows="4"
+                                                    placeholder="Enter your message" required></textarea>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chatbot UI -->
+        <div id="chatbot-container">
+            <button id="chatbot-toggle" title="Chat with ClimateBot">
+                <i class="fas fa-comment"></i>
+            </button>
+            <div id="chatbot-window">
+                <div id="chatbot-header">ClimateBot</div>
+                <div id="chatbot-messages"></div>
+                <div id="chatbot-input">
+                    <input type="text" id="chatbot-message" placeholder="Ask about climate data...">
+                    <button id="chatbot-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>© 2025 Climate Change Dashboard | All Rights Reserved</p>
+        </footer>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Map initialization with theme-aware tile layers
+        var map = L.map('map').setView([20, 0], 2);
+        const darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors'
+        });
+        const lightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors'
+        });
+        let currentTileLayer = darkTileLayer;
+        currentTileLayer.addTo(map);
+
+        let geoJsonLayer;
+        let climateData = {};
+
+        function updateMapTileLayer() {
+            const isLightTheme = document.body.classList.contains('light-theme');
+            if (currentTileLayer) map.removeLayer(currentTileLayer);
+            currentTileLayer = isLightTheme ? lightTileLayer : darkTileLayer;
+            currentTileLayer.addTo(map);
+        }
+
+        async function fetchClimateDataForCountry(country) {
+            showLoading('mapLoading');
+            try {
+                const [tempRes, co2Res, countryInfoRes] = await Promise.all([
+                    fetch(`/api/current_temperature?country=${encodeURIComponent(country)}`),
+                    fetch(`/api/co2?country=${encodeURIComponent(country)}`),
+                    fetch(`/api/deforestations?country=${encodeURIComponent(country)}`)
+                    // fetch(`/api/country_info?country=${encodeURIComponent(country)}`)
+                ]);
+                const tempData = await tempRes.json();
+                const co2Data = await co2Res.json();
+                const countryInfo = await countryInfoRes.json();
+                const temperature = tempData.error ? 25 : tempData.temperature;
+                const co2 = co2Data.error ? 415 : co2Data.co2_level;
+                const deforestation = countryInfo.error ? 10 : countryInfo.deforestation_rate;
+                // const deforestation = countryInfo.error || !countryInfo.deforestation_rate ? 10 : countryInfo.deforestation_rate;
+                return { temperature, co2, deforestation };
+            } catch (error) {
+                console.error(`Error fetching data for ${country}:`, error);
+                return { temperature: 25, co2: 415, deforestation: 10 };
+            } finally {
+                hideLoading('mapLoading');
+            }
+        }
+
+        function calculateClimateScore(temp, co2, deforest) {
+            const tempNorm = Math.min((temp + 20) / 60, 1) * 100;
+            const co2Norm = Math.min((co2 - 300) / 200, 1) * 100;
+            const deforestNorm = Math.min(deforest / 50, 1) * 100;
+            return (tempNorm * 0.4 + co2Norm * 0.4 + deforestNorm * 0.2);
+        }
+
+        function getColor(score) {
+            const isDark = document.body.classList.contains('dark-theme');
+            if (isDark) {
+                return score > 80 ? '#800026' :
+                    score > 60 ? '#BD0026' :
+                        score > 40 ? '#E31A1C' :
+                            score > 20 ? '#FC4E2A' :
+                                '#FFEDA0';
+            } else {
+                return score > 80 ? '#d7191c' :
+                    score > 60 ? '#fdae61' :
+                        score > 40 ? '#cccc80' :
+                            score > 20 ? '#abd9e9' :
+                                '#2c7bb6';
+            }
+        }
+
+        fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+            .then(response => response.json())
+            .then(geojsonData => {
+                geoJsonLayer = L.geoJson(geojsonData, {
+                    style: function (feature) {
+                        const country = feature.properties.name;
+                        const data = climateData[country] || { temperature: 25, co2: 415, deforestation: 10 };
+                        const score = calculateClimateScore(data.temperature, data.co2, data.deforestation);
+                        return {
+                            fillColor: getColor(score),
+                            weight: 1,
+                            opacity: 1,
+                            color: 'white',
+                            fillOpacity: 0.7
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                        const country = feature.properties.name;
+                        layer.on('click', async () => {
+                            const data = await fetchClimateDataForCountry(country);
+                            climateData[country] = data;
+                            const score = calculateClimateScore(data.temperature, data.co2, data.deforestation);
+                            layer.setStyle({ fillColor: getColor(score) });
+
+                            document.getElementById("temperature").textContent = `${data.temperature}°C`;
+                            document.getElementById("co2Emissions").textContent = `${data.co2} ppm`;
+                            document.getElementById("deforestationRate").textContent = `${data.deforestation}%`;
+                            document.getElementById("location").textContent = country;
+
+                            fetchTemperatureData(country);
+                            fetchCO2EmissionsData(country);
+                            fetchDeforestationData(country);
+
+                            layer.bindPopup(
+                                `<b>${country}</b><br>` +
+                                `Temp: ${data.temperature}°C<br>` +
+                                `CO₂: ${data.co2} ppm<br>` +
+                                `Deforestation: ${data.deforestation}%<br>` +
+                                `Climate Score: ${score.toFixed(1)}`
+                            ).openPopup();
+
+                            const countryData = await (await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(country)}`)).json();
+                            if (countryData && countryData[0]?.latlng) {
+                                const [lat, lon] = countryData[0].latlng;
+                                map.setView([lat, lon], 5);
+                                map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
+                                L.marker([lat, lon]).addTo(map)
+                                    .bindPopup(
+                                        `<b>${country}</b><br>` +
+                                        `Temp: ${data.temperature}°C<br>` +
+                                        `CO₂: ${data.co2} ppm<br>` +
+                                        `Deforestation: ${data.deforestation}%<br>` +
+                                        `Climate Score: ${score.toFixed(1)}`
+                                    ).openPopup();
+                            }
+                        });
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error("Error loading GeoJSON:", error));
+
+        async function fetchCountryInfo(countryName) {
+            showLoading('mapLoading');
+            try {
+                const tempResponse = await fetch(`/api/current_temperature?country=${encodeURIComponent(countryName)}`);
+                const tempData = await tempResponse.json();
+                const CO2Response = await fetch(`/api/co2?country=${encodeURIComponent(countryName)}`);
+                const CO2 = await CO2Response.json();
+                const deforestationResponse = await fetch(`/api/deforestations?country=${encodeURIComponent(countryName)}`);
+                const deforestation = await deforestationResponse.json();
+
+                document.getElementById("temperature").textContent = tempData.error ? "N/A" : `${tempData.temperature}°C`;
+                document.getElementById("co2Emissions").textContent = CO2.error ? "N/A" : `${CO2.co2_level}ppm`;
+                document.getElementById("deforestationRate").textContent = deforestation.error ? "N/A" : `${deforestation.deforestation_rate}%`;
+                document.getElementById("location").textContent = countryName;
+
+                fetchTemperatureData(countryName);
+                fetchCO2EmissionsData(countryName);
+                fetchDeforestationData(countryName);
+
+                const countryData = await (await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}`)).json();
+                if (countryData && countryData[0]?.latlng) {
+                    const [lat, lon] = countryData[0].latlng;
+                    map.setView([lat, lon], 5);
+                    map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup(`<b>${countryName}</b><br>${tempData.temperature || "N/A"}°C`)
+                        .openPopup();
+
+                    climateData[countryName] = await fetchClimateDataForCountry(countryName);
+                    geoJsonLayer.eachLayer(layer => {
+                        if (layer.feature.properties.name === countryName) {
+                            const score = calculateClimateScore(
+                                climateData[countryName].temperature,
+                                climateData[countryName].co2,
+                                climateData[countryName].deforestation
+                            );
+                            layer.setStyle({ fillColor: getColor(score) });
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Error in fetchCountryInfo:", error);
+                document.getElementById("location").textContent = "Error loading location";
+            } finally {
+                hideLoading('mapLoading');
+            }
+        }
+
+        document.getElementById("updateLocation").addEventListener("click", function () {
+            const selectedCountry = document.getElementById("countrySelect").value;
+            if (selectedCountry) {
+                fetchCountryInfo(selectedCountry);
+                bootstrap.Modal.getInstance(document.getElementById("locationModal")).hide();
+            }
+        });
+
+        document.getElementById("refreshData").addEventListener("click", () => fetchCountryInfo(document.getElementById("location").textContent));
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchCountryInfo("India");
+        });
+
+        fetch("https://restcountries.com/v3.1/all")
+            .then(res => res.json())
+            .then(data => {
+                let countrySelect = document.getElementById("countrySelect");
+                let predictionCountrySelect = document.getElementById("predictionCountry");
+                countrySelect.innerHTML = "";
+                predictionCountrySelect.innerHTML = "";
+                data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+                data.forEach(country => {
+                    let option = document.createElement("option");
+                    option.value = country.name.common;
+                    option.textContent = country.name.common;
+                    countrySelect.appendChild(option.cloneNode(true));
+                    predictionCountrySelect.appendChild(option.cloneNode(true));
+                });
+
+                const countrySearch = document.getElementById("countrySearch");
+                countrySearch.addEventListener("input", function () {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredCountries = data.filter(c => c.name.common.toLowerCase().includes(searchTerm));
+                    countrySelect.innerHTML = "";
+                    filteredCountries.forEach(c => {
+                        let option = document.createElement("option");
+                        option.value = c.name.common;
+                        option.textContent = c.name.common;
+                        countrySelect.appendChild(option);
+                    });
+                });
+            });
+
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const { latitude, longitude } = position.coords;
+                        try {
+                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+                            const data = await response.json();
+                            const country = data.address?.country || "India";
+                            console.log(`User location detected: ${country}`);
+                            await fetchCountryInfo(country);
+                        } catch (error) {
+                            console.error("Error fetching country from coordinates:", error);
+                            await fetchCountryInfo("India");
+                        }
+                    },
+                    (error) => {
+                        console.error("Geolocation error:", error.message);
+                        fetchCountryInfo("India");
+                    }
+                );
+            } else {
+                console.error("Geolocation not supported by this browser.");
+                fetchCountryInfo("India");
+            }
+        }
+
+        async function fetchTemperatureData(country) {
+            try {
+                const response = await fetch(`/api/temperature?country=${encodeURIComponent(country)}`);
+                const tempData = await response.json();
+                if (!tempData.length) return;
+
+                const labels = tempData.map(d => d.year.toString());
+                const avgTemps = tempData.map(d => d.avg_temperature);
+
+                const existingChart = Chart.getChart("chart1");
+                if (existingChart) existingChart.destroy();
+
+                new Chart(document.getElementById("chart1"), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: `Avg Temperature in ${country} (°C)`,
+                            data: avgTemps,
+                            borderColor: "red",
+                            fill: false,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { type: 'linear', ticks: { stepSize: 2, callback: value => Number(value).toFixed(0) } },
+                            y: { beginAtZero: false }
+                        },
+                        plugins: {
+                            legend: { labels: { color: document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0' } },
+                            tooltip: { mode: 'index', intersect: false }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching temperature data:", error);
+            }
+        }
+
+        async function fetchCO2EmissionsData(country) {
+            try {
+                const response = await fetch(`/api/co2-emissions?country=${encodeURIComponent(country)}`);
+                const co2Data = await response.json();
+                if (!co2Data.length) return;
+
+                const labels = co2Data.map(d => d.year.toString());
+                const emissions = co2Data.map(d => d.co2_emissions);
+
+                const existingChart = Chart.getChart("chart2");
+                if (existingChart) existingChart.destroy();
+
+                new Chart(document.getElementById("chart2"), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: `CO₂ Emissions in ${country} (ppm)`,
+                            data: emissions,
+                            borderColor: "blue",
+                            fill: false,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { type: 'linear', ticks: { stepSize: 2, callback: value => Number(value).toFixed(0) } },
+                            y: { beginAtZero: false }
+                        },
+                        plugins: {
+                            legend: { labels: { color: document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0' } },
+                            tooltip: { mode: 'index', intersect: false }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching CO₂ emissions data:", error);
+            }
+        }
+
+        async function fetchDeforestationData(country) {
+            try {
+                const response = await fetch(`/api/deforestation?country=${encodeURIComponent(country)}`);
+                const deforestationData = await response.json();
+                if (!deforestationData.length) return;
+
+                const existingChart = Chart.getChart("chart3");
+                if (existingChart) existingChart.destroy();
+
+                new Chart(document.getElementById("chart3"), {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: `Deforestation vs Temperature Rise (${country})`,
+                            data: deforestationData.map(d => ({ x: d.deforestation_rate, y: d.avg_temperature })),
+                            backgroundColor: "green",
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { title: { display: true, text: "Forests Lost (%)", color: document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0' } },
+                            y: { title: { display: true, text: "Temperature Rise (°C)", color: document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0' } }
+                        },
+                        plugins: {
+                            legend: { labels: { color: document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0' } }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching deforestation data:", error);
+            }
+        }
+
+        document.getElementById("simulationForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const temperatureChange = parseFloat(document.getElementById("temperatureChange").value) || 0;
+            const co2Level = parseFloat(document.getElementById("co2Level").value) || 400;
+            const deforestationChange = parseFloat(document.getElementById("deforestationChange").value) || 0;
+
+            showLoading('mapLoading');
+            try {
+                const response = await fetch('/api/predicts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ temperatureChange, co2Level, deforestationChange })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                document.getElementById("predictTemperature").textContent = `${data.predict_temperature_c || '-'}°C`;
+                document.getElementById("predictCO2").textContent = `${data.predict_co2_emissions_mmt || '-'} ppm`;
+                document.getElementById("predictDeforestation").textContent = `${data.predict_deforestation_rate_percent || '-'}%`;
+            } catch (error) {
+                console.error("Simulation Error:", error);
+                alert("Failed to simulate impact: " + error.message);
+                document.getElementById("predictTemperature").textContent = "-";
+                document.getElementById("predictCO2").textContent = "-";
+                document.getElementById("predictDeforestation").textContent = "-";
+            } finally {
+                hideLoading('mapLoading');
+            }
+        });
+
+        document.getElementById("predictionForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const country = document.getElementById("predictionCountry").value;
+            const year = document.getElementById("predictionYear").value;
+
+            if (!country || !year) {
+                alert("Please select a country and enter a year.");
+                return;
+            }
+
+            showLoading('mapLoading');
+            fetch(`/api/predict?country=${encodeURIComponent(country)}&year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) alert(data.error);
+                    else {
+                        document.getElementById("predictedTemperature").textContent = `${data.predicted_temperature_c}°C`;
+                        document.getElementById("predictedCO2").textContent = `${data.predicted_co2_emissions_mmt} ppm`;
+                        document.getElementById("predictedDeforestation").textContent = `${data.predicted_deforestation_rate_percent}%`;
+                    }
+                })
+                .catch(error => console.error("Error fetching prediction data:", error))
+                .finally(() => hideLoading('mapLoading'));
+        });
+
+        document.getElementById("generateReportBtn").addEventListener("click", function () {
+            const currentCountry = document.getElementById("location").textContent;
+            if (!currentCountry || currentCountry === "Loading...") {
+                alert("Please select a country first");
+                return;
+            }
+
+            showLoading('mapLoading');
+            fetch(`/api/generate-report?country=${encodeURIComponent(currentCountry)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/pdf'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentCountry}_climate_report.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                })
+                .catch(error => {
+                    console.error('Error generating report:', error);
+                    alert('Failed to generate report. Please check the console for details or try again.');
+                })
+                .finally(() => hideLoading('mapLoading'));
+        });
+
+        document.getElementById("contactForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const mobile = document.getElementById("mobile").value;
+            const message = document.getElementById("message").value;
+
+            showLoading('mapLoading');
+            fetch('/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, mobile, message })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert("Message sent successfully!");
+                        document.getElementById("contactForm").reset();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById("contactModal"));
+                        modal.hide();
+                    }
+                })
+                .catch(error => console.error("Error submitting contact form:", error))
+                .finally(() => hideLoading('mapLoading'));
+        });
+
+        fetch("https://restcountries.com/v3.1/all")
+            .then(res => res.json())
+            .then(data => {
+                let countrySelect = document.getElementById("countrySelect");
+                let predictionCountrySelect = document.getElementById("predictionCountry");
+                countrySelect.innerHTML = "";
+                predictionCountrySelect.innerHTML = "";
+                data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+                data.forEach(country => {
+                    let option = document.createElement("option");
+                    option.value = country.name.common;
+                    option.textContent = country.name.common;
+                    countrySelect.appendChild(option.cloneNode(true));
+                    predictionCountrySelect.appendChild(option.cloneNode(true));
+                });
+            })
+            .catch(error => console.error("Error loading countries:", error));
+
+        function addMapLegend() {
+            const legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'legend');
+                const grades = [0, 20, 40, 60, 80];
+                const labels = [];
+
+                div.innerHTML = '<h4>Climate Risk Score</h4>';
+
+                for (let i = 0; i < grades.length; i++) {
+                    div.innerHTML +=
+                        '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                        grades[i] + (grades[i + 1] ? '–' + grades[i + 1] + '<br>' : '+');
+                }
+
+                return div;
+            };
+
+            legend.addTo(map);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.classList.contains('dark-theme');
+
+            if (isDark) {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateMapTileLayer();
+            ['chart1', 'chart2', 'chart3'].forEach(id => {
+                const chart = Chart.getChart(id);
+                if (chart) {
+                    chart.options.plugins.legend.labels.color = document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0';
+                    chart.options.scales.x.title.color = document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0';
+                    chart.options.scales.y.title.color = document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0';
+                    chart.update();
+                }
+            });
+        }
+
+        function initTheme() {
+            const preferredTheme = localStorage.getItem('theme') || 'dark';
+            document.body.classList.add(`${preferredTheme}-theme`);
+            updateMapTileLayer();
+        }
+
+        function showLoading(elementId) {
+            document.getElementById(elementId).style.display = 'block';
+        }
+
+        function hideLoading(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        let compareMode = false;
+        let comparedCountries = [];
+
+        document.getElementById('compareMode').addEventListener('change', function (e) {
+            compareMode = e.target.checked;
+            if (compareMode) {
+                document.body.classList.add('compare-mode');
+                initCompareMode();
+            } else {
+                document.body.classList.remove('compare-mode');
+                exitCompareMode();
+            }
+        });
+
+        function initCompareMode() {
+            map.on('click', async function (e) {
+                const country = await getCountryFromCoordinates(e.latlng);
+                if (country && !comparedCountries.includes(country)) {
+                    comparedCountries.push(country);
+                    updateCompareView();
+                }
+            });
+
+            const compareUI = document.createElement('div');
+            compareUI.id = 'compareUI';
+            compareUI.style.position = 'absolute';
+            compareUI.style.top = '10px';
+            compareUI.style.right = '10px';
+            compareUI.style.zIndex = '1000';
+            compareUI.style.padding = '15px';
+            compareUI.style.borderRadius = '10px';
+            document.getElementById('map').appendChild(compareUI);
+
+            updateCompareView();
+        }
+
+        function exitCompareMode() {
+            comparedCountries = [];
+            map.off('click');
+            const compareUI = document.getElementById('compareUI');
+            if (compareUI) compareUI.remove();
+        }
+
+        async function updateCompareView() {
+            const compareUI = document.getElementById('compareUI');
+            if (!compareUI) return;
+
+            if (comparedCountries.length === 0) {
+                compareUI.innerHTML = '<p>Click on countries to compare</p>';
+                return;
+            }
+
+            compareUI.innerHTML = '<h5>Comparing Countries:</h5><ul>';
+            comparedCountries.forEach(country => {
+                const li = document.createElement('li');
+                li.textContent = country;
+                compareUI.appendChild(li);
+            });
+            compareUI.innerHTML += '</ul>';
+
+            const compareBtn = document.createElement('button');
+            compareBtn.textContent = 'Compare Data';
+            compareBtn.className = 'btn btn-sm btn-primary mt-2';
+            compareBtn.onclick = fetchComparisonData;
+            compareUI.appendChild(compareBtn);
+        }
+
+        async function fetchComparisonData() {
+            if (comparedCountries.length < 2) {
+                alert('Please select at least 2 countries to compare');
+                return;
+            }
+
+            showLoading('mapLoading');
+            try {
+                const response = await fetch('/api/compare', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ countries: comparedCountries })
+                });
+
+                const data = await response.json();
+                displayComparisonResults(data);
+            } catch (error) {
+                console.error('Comparison error:', error);
+                alert('Failed to fetch comparison data');
+            } finally {
+                hideLoading('mapLoading');
+            }
+        }
+
+        function displayComparisonResults(data) {
+            let modal = document.getElementById('compareModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'compareModal';
+                modal.className = 'modal fade';
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-dark">Country Comparison</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="compareResults"></div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            const resultsContainer = document.getElementById('compareResults');
+            resultsContainer.innerHTML = '';
+
+            const table = document.createElement('table');
+            table.className = 'table table-striped';
+
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Country</th>
+                    <th>Temperature (°C)</th>
+                    <th>CO₂ (ppm)</th>
+                    <th>Deforestation (%)</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            data.forEach(country => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${country.country}</td>
+                    <td>${country.temperature || "N/A"}</td>
+                    <td>${country.co2 || "N/A"}</td>
+                    <td>${country.deforestation || "0"}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.id = 'compareChart';
+            resultsContainer.appendChild(table);
+            resultsContainer.appendChild(chartCanvas);
+
+            new Chart(document.getElementById('compareChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.country),
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: data.map(d => d.temperature || 0),
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                    }, {
+                        label: 'CO₂ (ppm)',
+                        data: data.map(d => d.co2 || 0),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                    }, {
+                        label: 'Deforestation (%)',
+                        data: data.map(d => d.deforestation || 0),
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    plugins: {
+                        legend: { labels: { color: document.body.classList.contains('light-theme') ? '#2a2a2a' : '#e0e0e0' } }
+                    }
+                }
+            });
+
+            new bootstrap.Modal(modal).show();
+        }
+
+        async function getCountryFromCoordinates(latlng) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`);
+                const data = await response.json();
+                return data.address?.country;
+            } catch (error) {
+                console.error('Geocoding error:', error);
+                return null;
+            }
+        }
+
+        function prepareMapForPrint(country) {
+            const currentCenter = map.getCenter();
+            const currentZoom = map.getZoom();
+
+            if (climateData[country] && climateData[country].latlng) {
+                map.setView(climateData[country].latlng, 6);
+
+                let countryBounds;
+                geoJsonLayer.eachLayer(layer => {
+                    if (layer.feature.properties.name === country) {
+                        countryBounds = layer.getBounds();
+                    }
+                });
+
+                if (countryBounds) {
+                    const countryCenter = countryBounds.getCenter();
+                    const countrySize = countryBounds.getSize();
+                    const padding = Math.max(countrySize.lat, countrySize.lng) * 1.5;
+                    const bounds = L.latLngBounds(
+                        [countryCenter.lat - padding, countryCenter.lng - padding],
+                        [countryCenter.lat + padding, countryCenter.lng + padding]
+                    );
+                    map.fitBounds(bounds);
+                }
+
+                const printContainer = document.createElement('div');
+                printContainer.className = 'print-container';
+                printContainer.innerHTML = `
+                    <h3 class="print-title">Climate Data Report</h3>
+                    <h4 class="country-title">Selected Country: <span>${country}</span></h4>
+                `;
+                document.getElementById('map').before(printContainer);
+
+                geoJsonLayer.eachLayer(layer => {
+                    if (layer.feature.properties.name === country) {
+                        layer.setStyle({
+                            weight: 4,
+                            color: '#FF0000',
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.3
+                        });
+                        layer.bringToFront();
+
+                        const center = layer.getBounds().getCenter();
+                        L.marker(center, {
+                            icon: L.divIcon({
+                                className: 'print-marker',
+                                html: `<div>${country}</div>`,
+                                iconSize: [120, 40]
+                            }),
+                            zIndexOffset: 1000
+                        }).addTo(map);
+                    }
+                });
+
+                setTimeout(() => {
+                    window.print();
+                    map.setView(currentCenter, currentZoom);
+                    document.querySelector('.print-container')?.remove();
+                    geoJsonLayer.resetStyle();
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Marker && layer.options.icon?.options?.className === 'print-marker') {
+                            map.removeLayer(layer);
+                        }
+                    });
+                }, 2000);
+            }
+        }
+
+        // Chatbot functionality
+        document.getElementById('chatbot-toggle').addEventListener('click', function () {
+            const chatbotWindow = document.getElementById('chatbot-window');
+            chatbotWindow.style.display = chatbotWindow.style.display === 'block' ? 'none' : 'block';
+            if (chatbotWindow.style.display === 'block') {
+                document.getElementById('chatbot-message').focus();
+                if (!document.querySelector('#chatbot-messages .chatbot-message')) {
+                    addBotMessage('Hi! I\'m ClimateBot. Ask me about climate data, predictions, or how to use the dashboard!');
+                }
+            }
+        });
+
+        document.getElementById('chatbot-send').addEventListener('click', sendMessage);
+        document.getElementById('chatbot-message').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function addUserMessage(message) {
+            const messages = document.getElementById('chatbot-messages');
+            const div = document.createElement('div');
+            div.className = 'chatbot-message user-message';
+            div.textContent = message;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function addBotMessage(message) {
+            const messages = document.getElementById('chatbot-messages');
+            const div = document.createElement('div');
+            div.className = 'chatbot-message bot-message';
+            div.textContent = message;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatbot-message');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addUserMessage(message);
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    addBotMessage('Sorry, something went wrong. Try again!');
+                } else {
+                    addBotMessage(data.response);
+                }
+            } catch (error) {
+                console.error('Chatbot error:', error);
+                addBotMessage('Oops, I couldn\'t process that. Please try again.');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initTheme();
+            addMapLegend();
+            getUserLocation();
+
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('shown.bs.modal', function () {
+                    const firstInput = modal.querySelector('input, select, textarea');
+                    if (firstInput) firstInput.focus();
+                    modal.querySelectorAll('input, select, textarea, button, .btn-close').forEach(el => {
+                        el.style.pointerEvents = 'auto';
+                        el.style.zIndex = '1070';
+                    });
+                });
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) modalInstance.hide();
+                    }
+                });
+                modal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
+            });
+        });
+    </script>
+</body>
+
+</html>

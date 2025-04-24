@@ -1,0 +1,120 @@
+<!-- templates/simulation.html -->
+{% extends "base.html" %}
+{% block title %}Climate Dashboard - Simulation{% endblock %}
+{% block content %}
+<div class="container text-center mt-5">
+    <h3>Climate Prediction</h3>
+    <p>Select a country and year to predict climate factors.</p>
+    <form id="predictionForm">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="predictionCountry" class="form-label">Select Country</label>
+                <select id="predictionCountry" class="form-select">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="predictionYear" class="form-label">Enter Year</label>
+                <input type="number" class="form-control" id="predictionYear" placeholder="e.g., 2030" min="2023" max="2100">
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">Predict</button>
+        </div>
+    </form>
+</div>
+<div class="container text-center mt-4" id="predictionResults">
+    <h4>Prediction Results</h4>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card p-3 text-center h-100">
+                <h5><i class="fas fa-thermometer-half"></i> Predicted Temperature</h5>
+                <h4 id="predictedTemperature" class="fw-bold">-</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center h-100">
+                <h5><i class="fas fa-cloud"></i> Predicted CO₂ Emissions</h5>
+                <h4 id="predictedCO2" class="fw-bold">-</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center h-100">
+                <h5><i class="fas fa-tree"></i> Predicted Deforestation Rate</h5>
+                <h4 id="predictedDeforestation" class="fw-bold">-</h4>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="simulator">
+    <div class="card bg-dark text-white mt-5 fade-in">
+        <div class="card-body">
+            <h3 class="card-title text-center">Simulation Tool</h3>
+            <p class="text-center">Adjust the values below to see their impact on climate factors.</p>
+            <form id="simulationForm">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="temperatureChange" class="form-label1 mb-2">Temperature Change (°C)</label>
+                        <input type="number" class="form-control" id="temperatureChange" placeholder="e.g., 2" step="0.1">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="co2Level" class="form-label1 mb-2">CO2 Level (ppm)</label>
+                        <input type="number" class="form-control" id="co2Level" placeholder="e.g., 400" step="1">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="deforestationChange" class="form-label1 mb-2">Deforestation Change (%)</label>
+                        <input type="number" class="form-control" id="deforestationChange" placeholder="e.g., 5" step="0.1">
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-light">Simulate Impact</button>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center h-100">
+                            <h5><i class="fas fa-thermometer-half"></i> Simulated Temperature</h5>
+                            <h4 id="predictTemperature" class="fw-bold">-</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center h-100">
+                            <h5><i class="fas fa-cloud"></i> Simulated CO₂ Emissions</h5>
+                            <h4 id="predictCO2" class="fw-bold">-</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center h-100">
+                            <h5><i class="fas fa-tree"></i> Simulated Deforestation Rate</h5>
+                            <h4 id="predictDeforestation" class="fw-bold">-</h4>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<button class="btn btn-primary mt-3" id="generateReportBtn" data-tooltip="Generate a printable report">
+    <i class="fas fa-file-pdf me-2"></i> Generate Custom Report
+</button>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    // Page-specific JS for simulation and prediction
+    document.addEventListener("DOMContentLoaded", function () {
+        // Load countries for prediction form
+        fetch("https://restcountries.com/v3.1/all")
+            .then(res => res.json())
+            .then(data => {
+                let predictionCountrySelect = document.getElementById("predictionCountry");
+                predictionCountrySelect.innerHTML = "";
+                data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+                data.forEach(country => {
+                    let option = document.createElement("option");
+                    option.value = country.name.common;
+                    option.textContent = country.name.common;
+                    predictionCountrySelect.appendChild(option);
+                });
+            });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utstav Ratan - Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            width: 250px;
+            height: 100%;
+            background: #1a1a1a;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-pic {
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 3px solid #ffd700;
+        }
+
+        .profile h2 {
+            font-size: 1.5rem;
+            font-family: 'Montserrat', sans-serif;
+            color: #ffd700;
+        }
+
+        .profile p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .contact-info {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .contact-info p {
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+            color: #ccc;
+        }
+
+        .contact-info i {
+            margin-right: 0.5rem;
+            color: #ffd700;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            background: #1a1a1a;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #2d2d2d;
+            border-radius: 10px;
+        }
+
+        .nav-tabs a {
+            text-decoration: none;
+            color: #ccc;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            transition: color 0.3s;
+        }
+
+        .nav-tabs a.active {
+            color: #ffd700;
+            border-bottom: 2px solid #ffd700;
+        }
+
+        .nav-tabs a:hover {
+            color: #ffd700;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            padding: 2rem 0;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page h1 {
+            font-size: 2.5rem;
+            font-family: 'Montserrat', sans-serif;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .page p {
+            font-size: 1rem;
+            color: #ccc;
+            max-width: 800px;
+            margin-bottom: 1rem;
+        }
+
+        /* Skills Grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .skill-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: #2d2d2d;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .skill-card i {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .skill-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .skill-card p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        /* Testimonials Grid */
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .testimonial-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: #2d2d2d;
+            border-radius: 10px;
+        }
+
+        .testimonial-card img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-card p {
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-card h4 {
+            font-size: 1rem;
+            color: #ffd700;
+        }
+
+        /* Clients Grid */
+        .clients-grid {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .clients-grid img {
+            width: 100px;
+            height: auto;
+            filter: grayscale(100%);
+            transition: filter 0.3s;
+        }
+
+        .clients-grid img:hover {
+            filter: grayscale(0);
+        }
+
+        /* Resume Section */
+        .resume-section {
+            background: #2d2d2d;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .resume-section h3 {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+
+        .resume-section p {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        /* Skills Progress */
+        .skills-progress {
+            margin-top: 2rem;
+        }
+
+        .skill-item {
+            margin-bottom: 1rem;
+        }
+
+        .skill-item span {
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #444;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: #ffd700;
+            border-radius: 5px;
+        }
+
+        /* Portfolio Section */
+        .portfolio-filters {
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            background: #2d2d2d;
+            border: none;
+            color: #ccc;
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #ffd700;
+            color: #1a1a1a;
+        }
+
+        .filter-btn:hover {
+            background: #444;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .project-card {
+            background: #2d2d2d;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .project-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .project-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .project-card p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        /* Contact Section */
+        .map-section {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .map-img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        form input,
+        form textarea {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            background: #2d2d2d;
+            color: #fff;
+            flex: 1;
+        }
+
+        form textarea {
+            height: 150px;
+            resize: none;
+        }
+
+        form button {
+            padding: 0.75rem;
+            background: #ffd700;
+            border: none;
+            border-radius: 5px;
+            color: #1a1a1a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 150px;
+            align-self: flex-end;
+        }
+
+        form button:hover {
+            background: #e6c200;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-250px);
+                transition: transform 0.3s ease;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .skills-grid,
+            .testimonial-grid,
+            .project-grid,
+            .clients-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="profile">
+            <img src="https://via.placeholder.com/80" alt="Utstav Ratan" class="profile-pic">
+            <h2>Utstav Ratan</h2>
+            <p>Web Developer</p>
+            <div class="contact-info">
+                <p><i class="fas fa-envelope"></i> ratanutsav@gmail.com</p>
+                <p><i class="fas fa-phone"></i> +91 9000000005</p>
+                <p><i class="fas fa-calendar-alt"></i> XXXXX-XX-XXXX</p>
+                <p><i class="fas fa-map-marker-alt"></i> NewDelhi, Delhi, India</p>
+                <p><i class="fab fa-facebook-f"></i> <i class="fab fa-instagram"></i></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <a href="#about" class="active">About</a>
+            <a href="#resume">Resume</a>
+            <a href="#portfolio">Portfolio</a>
+            <a href="#contact">Contact</a>
+        </nav>
+
+        <!-- About Page -->
+        <section id="about" class="page active">
+            <h1>About Me</h1>
+            <p class="subtitle">— Creator and UI/UX Designer from New Delhi, India, working in web development and App
+                development.</p>
+            <p>I’m a creator and UI/UX designer from New Delhi, India, working in web development and App development. I
+                enjoy turning complex problems into simple, beautiful, and intuitive designs. My interest is to build
+                websites so that it is functional and user-friendly but at the same time attractive. Moreover, I’d add
+                personal touch to the product and make sure it is eye-catching and easy to use. My aim is to bring
+                across the message and identity in the most creative way.</p>
+
+            <h1>What I’m Doing</h1>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <i class="fas fa-paint-brush"></i>
+                    <h3>Web Design</h3>
+                    <p>The most modern and high-quality design made at a professional level.</p>
+                </div>
+                <div class="skill-card">
+                    <i class="fas fa-code"></i>
+                    <h3>Web Development</h3>
+                    <p>High-quality development of sites at the professional level.</p>
+                </div>
+                <div class="skill-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Mobile Apps</h3>
+                    <p>Professional development of apps for iOS and Android.</p>
+                </div>
+                <div class="skill-card">
+                    <i class="fas fa-camera"></i>
+                    <h3>Photography</h3>
+                    <p>I make high-quality photos of any category at a professional level.</p>
+                </div>
+            </div>
+
+            <h1>Testimonials</h1>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <img src="https://via.placeholder.com/50" alt="Minral">
+                    <p>Utstav is good.</p>
+                    <h4>Minral</h4>
+                </div>
+                <div class="testimonial-card">
+                    <img src="https://via.placeholder.com/50" alt="Shweta">
+                    <p>Utstav is best.</p>
+                    <h4>Shweta</h4>
+                </div>
+            </div>
+
+            <h1>Clients</h1>
+            <div class="clients-grid">
+                <img src="https://via.placeholder.com/100" alt="Ransom & Wilder">
+                <img src="https://via.placeholder.com/100" alt="Big Enough">
+                <img src="https://via.placeholder.com/100" alt="Cara Indoors">
+                <img src="https://via.placeholder.com/100" alt="Authentic Collection">
+            </div>
+        </section>
+
+        <!-- Resume Page -->
+        <section id="resume" class="page">
+            <h1>Resume</h1>
+            <h2>Education</h2>
+            <div class="resume-section">
+                <h3>KR MANGALAM UNIVERSITY</h3>
+                <p>2024 – 2028</p>
+                <p>I am currently pursuing my B.Tech in Computer Science and Engineering from KR Mangalam University.
+                </p>
+            </div>
+            <div class="resume-section">
+                <h3>Oxford Senior Secondary School</h3>
+                <p>2022 – 2024</p>
+                <p>I have done my senior secondary education from Oxford Senior Secondary School.</p>
+            </div>
+            <div class="resume-section">
+                <h3>St. Xavier’s Jr./Sr. School</h3>
+                <p>2012 – 2022</p>
+                <p>I have done my earlier education from class 1st to 10th at St. Xavier’s Jr./Sr. School.</p>
+            </div>
+
+            <h2>Experience</h2>
+            <div class="resume-section">
+                <h3>B.Tech</h3>
+                <p>2024 – Present</p>
+                <p>Currently pursuing B.Tech in Computer Science and Engineering.</p>
+            </div>
+            <div class="resume-section">
+                <h3>Web Designer</h3>
+                <p>2024 – Present</p>
+                <p>Currently working on web designing projects.</p>
+            </div>
+
+            <h2>My Skills</h2>
+            <div class="skills-progress">
+                <div class="skill-item">
+                    <span>Web Design</span>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 80%;"></div>
+                    </div>
+                </div>
+                <div class="skill-item">
+                    <span>Graphic Design</span>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 70%;"></div>
+                    </div>
+                </div>
+                <div class="skill-item">
+                    <span>Branding</span>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 90%;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Page -->
+        <section id="portfolio" class="page">
+            <h1>Portfolio</h1>
+            <div class="portfolio-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="web-design">Web Design</button>
+                <button class="filter-btn" data-filter="applications">Applications</button>
+                <button class="filter-btn" data-filter="web-development">Web Development</button>
+            </div>
+            <div class="project-grid">
+                <div class="project-card web-design">
+                    <img src="https://via.placeholder.com/300x200" alt="Finance">
+                    <h3>Finance</h3>
+                    <p>Web design</p>
+                </div>
+                <div class="project-card applications">
+                    <img src="https://via.placeholder.com/300x200" alt="Orizon">
+                    <h3>Orizon</h3>
+                    <p>Web development</p>
+                </div>
+                <div class="project-card web-design">
+                    <img src="https://via.placeholder.com/300x200" alt="Fundo">
+                    <h3>Fundo</h3>
+                    <p>Web design</p>
+                </div>
+                <div class="project-card applications">
+                    <img src="https://via.placeholder.com/300x200" alt="Brawhalla">
+                    <h3>Brawhalla</h3>
+                    <p>Applications</p>
+                </div>
+                <div class="project-card web-design">
+                    <img src="https://via.placeholder.com/300x200" alt="DSM">
+                    <h3>DSM</h3>
+                    <p>Web design</p>
+                </div>
+                <div class="project-card applications">
+                    <img src="https://via.placeholder.com/300x200" alt="Task Manager">
+                    <h3>Task Manager</h3>
+                    <p>Applications</p>
+                </div>
+                <div class="project-card web-development">
+                    <img src="https://via.placeholder.com/300x200" alt="Summary">
+                    <h3>Summary</h3>
+                    <p>Web development</p>
+                </div>
+                <div class="project-card web-development">
+                    <img src="https://via.placeholder.com/300x200" alt="Arrival">
+                    <h3>Arrival</h3>
+                    <p>Web development</p>
+                </div>
+                <div class="project-card web-design">
+                    <img src="https://via.placeholder.com/300x200" alt="MetaSpark">
+                    <h3>MetaSpark</h3>
+                    <p>Web design</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Page -->
+        <section id="contact" class="page">
+            <h1>Contact</h1>
+            <div class="map-section">
+                <img src="https://via.placeholder.com/500x300" alt="New Delhi Map" class="map-img">
+                <div class="map-overlay">New Delhi, Delhi, India<br>View larger map</div>
+            </div>
+            <h2>Contact Form</h2>
+            <form>
+                <div class="form-group">
+                    <input type="text" placeholder="Full name" required>
+                    <input type="email" placeholder="Email address" required>
+                </div>
+                <textarea placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Toggle Sidebar for Mobile
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+
+        document.querySelector('.profile-pic').addEventListener('click', () => {
+            sidebar.style.transform = sidebar.style.transform === 'translateX(0)' ? 'translateX(-250px)' : 'translateX(0)';
+            mainContent.style.marginLeft = sidebar.style.transform === 'translateX(0)' ? '250px' : '0';
+        });
+
+        // Tab Switching
+        const navLinks = document.querySelectorAll('.nav-tabs a');
+        const pages = document.querySelectorAll('.page');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                pages.forEach(page => page.classList.remove('active'));
+                document.querySelector(this.getAttribute('href')).classList.add('active');
+            });
+        });
+
+        // Portfolio Filter
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const projectCards = document.querySelectorAll('.project-card');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                const filter = button.getAttribute('data-filter');
+                projectCards.forEach(card => {
+                    if (filter === 'all' || card.classList.contains(filter)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (this.classList.contains('nav-tabs')) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
